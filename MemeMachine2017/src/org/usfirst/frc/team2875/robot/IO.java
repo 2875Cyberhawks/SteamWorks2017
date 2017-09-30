@@ -19,7 +19,7 @@ public class IO {
 	
 	public IO(){
 		mainController = new Joystick(0);
-		subordanateController = new Joystick(2);
+		subordanateController = new Joystick(1);
 		subordanateController.setRumble(GenericHID.RumbleType.kLeftRumble, 0);
 		subordanateController.setRumble(GenericHID.RumbleType.kRightRumble,0);
 	}
@@ -47,7 +47,7 @@ public class IO {
 	public double getForwardInput(){
 		
 		double in = mainController.getRawAxis(1);
-		return (Math.abs(in) > JOY_DEADZONE) ? in : 0;
+		return (Math.abs(in)*.75 > JOY_DEADZONE) ? in : 0;
 	}
 	//returns yaw movement input
 	public double getLeftInput(){
