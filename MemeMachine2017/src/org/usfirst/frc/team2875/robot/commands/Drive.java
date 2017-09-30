@@ -1,5 +1,6 @@
 package org.usfirst.frc.team2875.robot.commands;
 
+import org.usfirst.frc.team2875.robot.IO;
 import org.usfirst.frc.team2875.robot.Robot;
 
 import edu.wpi.first.wpilibj.command.Command;
@@ -18,7 +19,7 @@ public class Drive extends Command {
 	}
 
 	protected void execute() {
-		Robot.driveTrainSys.input(Robot.input.getForwardInput(),Robot.input.getLeftInput(),Robot.input.getRightInput());
+		Robot.driveTrainSys.input(Robot.input.getForwardInput(), Robot.input.getTurnInput()- (Robot.gyroscope.getAngle()*IO.SD_MULT));
 	}
 
 	protected boolean isFinished() {
