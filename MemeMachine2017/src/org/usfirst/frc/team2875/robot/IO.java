@@ -12,14 +12,16 @@ import edu.wpi.first.wpilibj.buttons.JoystickButton;
  */
 public class IO {
 	public static final double JOY_DEADZONE = 0.15;
+	public static final double SD_MULT = 0.03;
 	public static final double TRIGGER_DEADZONE = 0.02;
+	public static final double DRIVE_SENSITIVITY = 0.5;
 	//// CREATING BUTTONS
 	public Joystick mainController;
 	private Joystick subordanateController;
 	
 	public IO(){
 		mainController = new Joystick(0);
-		subordanateController = new Joystick(2);
+		subordanateController = new Joystick(1);
 		subordanateController.setRumble(GenericHID.RumbleType.kLeftRumble, 0);
 		subordanateController.setRumble(GenericHID.RumbleType.kRightRumble,0);
 	}
@@ -47,23 +49,20 @@ public class IO {
 	public double getForwardInput(){
 		
 		double in = mainController.getRawAxis(1);
-		return (Math.abs(in) > JOY_DEADZONE) ? in : 0;
+		return (Math.abs(in)*.75 > JOY_DEADZONE) ? in : 0;
 	}
 	//returns yaw movement input
-	public double getLeftInput(){
+public double getTurnInput(){
+		
 		double in = mainController.getRawAxis(2);
-		return Math.abs(in) > TRIGGER_DEADZONE ? in : 0;
-	}
-	public double getRightInput(){
-		double in = mainController.getRawAxis(3);
-		return Math.abs(in) > TRIGGER_DEADZONE ? in : 0;
+		return (Math.abs(in)*.75 > JOY_DEADZONE) ? in : 0;
 	}
 	public double getStrafeInput(){
 		double in = mainController.getRawAxis(4);
 		return (Math.abs(in) > (JOY_DEADZONE)) ? in : 0;
 	}
 	public double getBallInput(){
-		double in = subordanateController.getRawAxis(5);
+		double in = subordanateController.getRawAxis(4);
 		return (Math.abs(in) > (JOY_DEADZONE)) ? in : 0;
 	}
 	public boolean getClimbLock(){
