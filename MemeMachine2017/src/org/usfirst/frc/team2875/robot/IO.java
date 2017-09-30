@@ -47,7 +47,7 @@ public class IO {
 	public double getForwardInput(){
 		
 		double in = mainController.getRawAxis(1);
-		return (Math.abs(in) > JOY_DEADZONE) ? in : 0;
+		return (Math.abs(in)*.75 > JOY_DEADZONE) ? in : 0;
 	}
 	//returns yaw movement input
 	public double getLeftInput(){
