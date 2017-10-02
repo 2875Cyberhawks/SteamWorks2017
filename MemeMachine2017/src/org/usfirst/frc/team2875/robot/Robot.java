@@ -45,7 +45,9 @@ import auto.AutoRight_RightBoiler;
  */
 public class Robot extends IterativeRobot {
 	//Settings
-	//Test Bad
+
+	//Test Good
+	
 	public static final int[] ENCODERMAP = {1,2,3,4};
 	//Objects
 	//HeyThere!
