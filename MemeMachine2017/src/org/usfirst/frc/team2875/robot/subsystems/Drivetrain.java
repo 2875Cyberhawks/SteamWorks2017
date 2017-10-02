@@ -16,6 +16,7 @@ public class Drivetrain extends Subsystem{
 	private double straight;
 	private int count;
 	public int straightdrive_delay = 4;
+	boolean samePath =false;
 	public Drivetrain(){
 		System.out.println("starting");
 		
@@ -36,13 +37,21 @@ public class Drivetrain extends Subsystem{
 		return (in / Math.abs(in));
 	}
 	public void input(double forward, double left, double right){
-		left /= 2;
-		right /= 2;
-		//drive(forward,left,right);
+		
 		
 		if (Math.abs(forward)-IO.JOY_DEADZONE > 0 && left - IO.TRIGGER_DEADZONE<= 0 && right - IO.TRIGGER_DEADZONE<=0){
-			
-			if (count >0){
+			if (samePath == true)
+			straightDrive(forward);
+			else {
+				straight = Robot.gyroscope.get_heading();
+				samePath = false;
+				drive(-forward,left,right);
+			}
+		}else {
+			straight = Robot.gyroscope.get_heading();
+			drive(-forward,left,right);
+		}
+			/*if (count >0){
 				straight = Robot.gyroscope.get_heading();
 				count--;
 				drive(-forward,left,right);
@@ -58,8 +67,8 @@ public class Drivetrain extends Subsystem{
 			count = straightdrive_delay;
 		}else{
 			drive(-forward, left, right);
-			count = 0;
-		}
+			count = 0;*/
+		
 	}
 	public void straightDrive(double iforward){
 		double forward = -iforward;
