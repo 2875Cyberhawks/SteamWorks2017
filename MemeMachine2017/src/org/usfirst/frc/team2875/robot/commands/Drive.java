@@ -19,7 +19,10 @@ public class Drive extends Command {
 	}
 
 	protected void execute() {
-		Robot.driveTrainSys.input(Robot.input.getForwardInput(), Robot.input.getTurnInput()- (Robot.gyroscope.getAngle()*IO.SD_MULT));
+		double forward=Robot.input.getForwardInput();
+		//if (Math.abs(forward) < .1)
+			//forward = Math.abs(Robot.input.getTurnInput());
+		Robot.driveTrainSys.input(-forward, /*Robot.input.getTurnInput()*/-(Robot.gyroscope.getAngle()*IO.SD_MULT));
 	}
 
 	protected boolean isFinished() {

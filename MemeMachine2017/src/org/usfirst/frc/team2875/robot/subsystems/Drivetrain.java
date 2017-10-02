@@ -61,7 +61,7 @@ public class Drivetrain extends Subsystem{
 	      leftOutput = outputMagnitude;
 	      rightOutput = outputMagnitude;
 	    }
-	    Robot.rightGearbox.setSpeed(-rightOutput);
+	    Robot.rightGearbox.setSpeed(rightOutput);
 		Robot.leftGearbox.setSpeed(leftOutput);
 	  }
 	
