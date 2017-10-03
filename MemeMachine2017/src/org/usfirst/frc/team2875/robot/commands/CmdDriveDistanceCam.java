@@ -52,7 +52,7 @@ public class CmdDriveDistanceCam extends Command{
 		System.out.println(Robot.encoders.getLeftEncoder());
 		System.out.println(Robot.encoders.getRightEncoder());
 		if(deltaLeft >= distance || deltaRight >= distance){
-			Robot.driveTrainSys.straightdrive_delay=4;
+			//Robot.driveTrainSys.straightdrive_delay=4;
 			System.out.println("bad meme");
 			Robot.driveTrainSys.stop();
 			return true;
