@@ -106,7 +106,7 @@ public class Robot extends IterativeRobot {
 		leftGearbox = new Gearbox(9, 8, 7);
 		
 		System.out.println("startingup");
-		driveTrainSys =  new Drivetrain();
+		
 	
 		ballGrabber = new BallGrabber();
 		//Determine which systems are currently enabled via Smart Dash
@@ -141,6 +141,7 @@ public class Robot extends IterativeRobot {
 		//lights = new Solenoid(0,2);
 		clutch = new Clutch();
 		gear =  new GearHolder();
+		driveTrainSys =  new Drivetrain();
 	}
 	/**
 	 * This function is called once each time the robot enters Disabled mode.

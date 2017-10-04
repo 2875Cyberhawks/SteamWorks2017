@@ -46,7 +46,7 @@ public class Drivetrain extends Subsystem{
 		}else if (Math.abs(forward)-IO.JOY_DEADZONE > 0){
 			drive(-forward, left, right);
 			count = straightdrive_delay;
-		}else{
+		}else{2
 			drive(-forward, left, right);
 			count = 0;*/
 		
