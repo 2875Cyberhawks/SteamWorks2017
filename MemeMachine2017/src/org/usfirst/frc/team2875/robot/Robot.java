@@ -98,7 +98,7 @@ public class Robot extends IterativeRobot {
 	public void robotInit() {
 		
 		prefs = Preferences.getInstance();
-		vis = new CamThread();
+		//vis = new CamThread();
 		lights = new Relay(3);
 		input.init();
 		encoders = new Encoders();
@@ -275,7 +275,7 @@ public class Robot extends IterativeRobot {
 		
 		Scheduler.getInstance().run();
 		SmartDashboard.putNumber("Gyro", gyroscope.get_heading());
-		System.out.println(Robot.encoders.getRightSpeed());
+		//System.out.println(Robot.encoders.getRightSpeed());
 	//System.out.println(encoders.getLeftSpeed());
 		//System.out.println(encoders.getRightSpeed());
 		/*

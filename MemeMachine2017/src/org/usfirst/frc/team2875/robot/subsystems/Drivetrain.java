@@ -55,26 +55,21 @@ public class Drivetrain extends Subsystem{
 		double forward = -iforward;
 		Double cur = Robot.gyroscope.get_heading() - straight;
 		Debug.log("Straight", straight);
-		
-			if (cur> 0){
-				Robot.leftGearbox.setSpeed((forward-Math.abs(cur)/90));
-				Robot.rightGearbox.setSpeed((forward+Math.abs(cur)/90));
-			}else if(cur <0 ){
-				Robot.rightGearbox.setSpeed((forward-Math.abs(cur)/90));
-				Robot.leftGearbox.setSpeed((forward+Math.abs(cur)/90));
-			}else{
-				Robot.rightGearbox.setSpeed(forward);
-				Robot.leftGearbox.setSpeed(forward);
-			}
+		int gyro_factor = 40;
+		System.out.println("Driving: Left is " + (((Math.abs(cur * forward)))/gyro_factor) + " Right is " + (((Math.abs(cur * forward)))/gyro_factor));
+		Robot.leftGearbox.setSpeed(forward-((cur * forward)/gyro_factor));
+		Robot.rightGearbox.setSpeed(forward+((cur * forward)/gyro_factor));
+			
 		
 		
 	}
 	public void drive(double forward, double left, double right){
+		
 		//System.out.println(Robot.vis.getAngle());
 		double g1 = forward + ((right) - (left));
 		double g2 = -forward + ((right) - (left));
-		double speed2 = Math.max(0, Math.abs(g1) * getSign(g1));
-		double speed1 = Math.max(0, Math.abs(g2) * getSign(g2));
+		double speed2 = g1;//Math.max(0, Math.abs(g1)) * getSign(g1);
+		double speed1 = g2;//Math.max(0, Math.abs(g2)) * getSign(g2);
 		Robot.rightGearbox.setSpeed(-speed1);
 		Robot.leftGearbox.setSpeed(speed2);	
 	}
