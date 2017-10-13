@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Clutch extends Subsystem {
-	boolean isOpen = false;
+	public boolean isOpen = false;
 	boolean bLast = false;
 	double CLUTCHRELEASE_ZONE = 1;
 	double delta;

@@ -98,7 +98,7 @@ public class Robot extends IterativeRobot {
 	public void robotInit() {
 		
 		prefs = Preferences.getInstance();
-		vis = new CamThread();
+		//vis = new CamThread();
 		lights = new Relay(3);
 		input.init();
 		encoders = new Encoders();
@@ -106,7 +106,7 @@ public class Robot extends IterativeRobot {
 		leftGearbox = new Gearbox(9, 8, 7);
 		
 		System.out.println("startingup");
-		driveTrainSys =  new Drivetrain();
+		
 	
 		ballGrabber = new BallGrabber();
 		//Determine which systems are currently enabled via Smart Dash
@@ -141,6 +141,7 @@ public class Robot extends IterativeRobot {
 		//lights = new Solenoid(0,2);
 		clutch = new Clutch();
 		gear =  new GearHolder();
+		driveTrainSys =  new Drivetrain();
 	}
 	/**
 	 * This function is called once each time the robot enters Disabled mode.
@@ -274,7 +275,7 @@ public class Robot extends IterativeRobot {
 		
 		Scheduler.getInstance().run();
 		SmartDashboard.putNumber("Gyro", gyroscope.get_heading());
-		System.out.println(Robot.encoders.getRightSpeed());
+		//System.out.println(Robot.encoders.getRightSpeed());
 	//System.out.println(encoders.getLeftSpeed());
 		//System.out.println(encoders.getRightSpeed());
 		/*

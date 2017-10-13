@@ -49,10 +49,10 @@ public class CmdDriveDistanceCam extends Command{
 	//	double totalDelta = (originDistL - Robot.encoders.getLeftEncoder()) + (originDistR - Robot.encoders.getRightEncoder()) / 2;
 		double deltaLeft = Math.abs(originDistL - Robot.encoders.getLeftEncoder());
 		double deltaRight = Math.abs(originDistR - Robot.encoders.getRightEncoder());
-		System.out.println(Robot.encoders.getLeftEncoder());
-		System.out.println(Robot.encoders.getRightEncoder());
+		//System.out.println(Robot.encoders.getLeftEncoder());
+		//System.out.println(Robot.encoders.getRightEncoder());
 		if(deltaLeft >= distance || deltaRight >= distance){
-			Robot.driveTrainSys.straightdrive_delay=4;
+			//Robot.driveTrainSys.straightdrive_delay=4;
 			System.out.println("bad meme");
 			Robot.driveTrainSys.stop();
 			return true;
