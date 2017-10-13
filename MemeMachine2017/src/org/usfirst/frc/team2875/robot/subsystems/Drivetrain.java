@@ -27,29 +27,6 @@ public class Drivetrain extends Subsystem{
 	}
 	public void input(double forward, double left, double right){
 		drive(-forward,left,right);
-		/*if (Math.abs(forward) > 0 && (left <= 0) && (right <=0)){
-			straightDrive(forward);
-		}else {
-			straight = Robot.gyroscope.get_heading();
-			
-		}*/
-			/*if (count >0){
-				straight = Robot.gyroscope.get_heading();
-				count--;
-				drive(-forward,left,right);
-			}else{
-				straightDrive(forward);
-			}
-		}else if(left+ right == 0){
-			count = 0;
-			straight = Robot.gyroscope.get_heading();
-			drive(-forward, left, right);
-		}else if (Math.abs(forward)-IO.JOY_DEADZONE > 0){
-			drive(-forward, left, right);
-			count = straightdrive_delay;
-		}else{2
-			drive(-forward, left, right);
-			count = 0;*/
 		
 	}
 	public void straightDrive(double iforward){
