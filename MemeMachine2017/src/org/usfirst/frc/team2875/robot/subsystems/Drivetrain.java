@@ -26,12 +26,13 @@ public class Drivetrain extends Subsystem{
 		return (in / Math.abs(in));
 	}
 	public void input(double forward, double left, double right){
-		if (Math.abs(forward) > 0 && (left <= 0) && (right <=0)){
+		drive(-forward,left,right);
+		/*if (Math.abs(forward) > 0 && (left <= 0) && (right <=0)){
 			straightDrive(forward);
 		}else {
 			straight = Robot.gyroscope.get_heading();
-			drive(-forward,left,right);
-		}
+			
+		}*/
 			/*if (count >0){
 				straight = Robot.gyroscope.get_heading();
 				count--;
@@ -56,7 +57,7 @@ public class Drivetrain extends Subsystem{
 		Double cur = Robot.gyroscope.get_heading() - straight;
 		Debug.log("Straight", straight);
 		int gyro_factor = 40;
-		System.out.println("Driving: Left is " + (((Math.abs(cur * forward)))/gyro_factor) + " Right is " + (((Math.abs(cur * forward)))/gyro_factor));
+		//System.out.println("Driving: Left is " + (((Math.abs(cur * forward)))/gyro_factor) + " Right is " + (((Math.abs(cur * forward)))/gyro_factor));
 		Robot.leftGearbox.setSpeed(forward-((cur * forward)/gyro_factor));
 		Robot.rightGearbox.setSpeed(forward+((cur * forward)/gyro_factor));
 			
@@ -71,7 +72,11 @@ public class Drivetrain extends Subsystem{
 		double speed2 = g1;//Math.max(0, Math.abs(g1)) * getSign(g1);
 		double speed1 = g2;//Math.max(0, Math.abs(g2)) * getSign(g2);
 		Robot.rightGearbox.setSpeed(-speed1);
-		Robot.leftGearbox.setSpeed(speed2);	
+	
+		if (!Robot.clutch.isOpen) 
+			Robot.leftGearbox.setSpeed(speed2 * .88);
+			else
+				Robot.leftGearbox.setSpeed(speed2 * .70);
 	}
 	protected void initDefaultCommand() {
 		setDefaultCommand(new Drive());
