@@ -79,7 +79,7 @@ public class Robot extends IterativeRobot {
 	double angleGoal = 0.0;
 	public static Relay lights; 
 	
-	public static CamThread vis;
+	public static NewCamThread vis;
 	public static AutoAlign auto = new AutoAlign();
 	//SETTINGS
 	public static final double GYRO_DEADZONE = .5;
@@ -98,7 +98,7 @@ public class Robot extends IterativeRobot {
 	public void robotInit() {
 		
 		prefs = Preferences.getInstance();
-		//vis = new CamThread();
+		vis = new NewCamThread();
 		lights = new Relay(3);
 		input.init();
 		encoders = new Encoders();

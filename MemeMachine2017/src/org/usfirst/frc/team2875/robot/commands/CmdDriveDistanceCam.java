@@ -27,7 +27,7 @@ public class CmdDriveDistanceCam extends Command{
 	}
 	@Override
 	protected void execute(){
-		Double cur = Robot.vis.getAngle();
+		Double cur = 0.0;//Robot.vis.getAngle();
 		
 		Debug.log("Straight", straight);
 		if (cur> 0){
