@@ -34,11 +34,12 @@ public class IO {
 		return false;
 	
 	}
+
 	public boolean getClutchSwitch(){
 		return mainController.getRawButton(3);
 	}
 	public boolean getAutoAlignCancel(){
-		return mainController.getRawButton(2);
+		return mainController.getRawButton(5);
 	}
 	public boolean getGearSwitch(){
 		return mainController.getRawButton(4);
@@ -52,11 +53,11 @@ public class IO {
 	//returns yaw movement input
 	public double getLeftInput(){
 		double in = mainController.getRawAxis(2);
-		return Math.abs(in)*.6 > TRIGGER_DEADZONE ? in : 0;
+		return Math.abs(in)* .65 > TRIGGER_DEADZONE ? in : 0;
 	}
 	public double getRightInput(){
 		double in = mainController.getRawAxis(3);
-		return Math.abs(in)*.6 > TRIGGER_DEADZONE ? in : 0;
+		return Math.abs(in)* .65 > TRIGGER_DEADZONE ? in : 0;
 	}
 	public double getStrafeInput(){
 		double in = mainController.getRawAxis(4);

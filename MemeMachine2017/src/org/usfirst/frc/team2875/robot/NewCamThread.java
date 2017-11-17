@@ -1,6 +1,9 @@
 package org.usfirst.frc.team2875.robot;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
+
 import org.opencv.core.*;
 import org.opencv.imgproc.*;
 
@@ -19,29 +22,50 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class NewCamThread {
 
 	//Outputs
-	private Mat blurOutput = new Mat();
-	private Mat hslThresholdOutput = new Mat();
-	private Mat cvCannyOutput = new Mat();
+	private Mat blurOutput = Mat.zeros(new Size(HEIGHT, WIDTH), CvType.CV_8UC3);
+	private Mat hslThresholdOutput =  Mat.zeros(new Size(HEIGHT, WIDTH), CvType.CV_8UC3);
+	private Mat cvCannyOutput = Mat.zeros(new Size(HEIGHT, WIDTH), CvType.CV_8UC3);
+	
+	
+	private double dhslHueLower =45.32374100719424;
+	private double dhslLuminanceLower = 126.12410071942446;
+	private double dhslSaturationLower = 96.31294964028775;
+	private double dhslHueUpper =180.0;
+	private double dhslLuminanceUpper = 255.0;
+	private double dhslSaturationUpper = 227.09595959595958;
+	
+	private double hslHueLower =45.32374100719424;
+	private double hslLuminanceLower = 126.12410071942446;
+	private double hslSaturationLower = 96.31294964028775;
+	private double hslHueUpper =180.0;
+	private double hslLuminanceUpper = 227.09595959595958;
+	private double hslSaturationUpper = 255.0;
+	private double bradius = 8.1;
 	
 	UsbCamera camera;
 	CvSource outputStream;
 	UsbCamera camera2;
+	Mat hierarchy;
 	public boolean running = true;
-	
-	static final int WIDTH = 360;
-	static final int HEIGHT = 480;
+	public int targetLocation = 0;
+	public boolean hasTarget = false;
+	static final int WIDTH = 320;
+	static final int HEIGHT = 240;
 	static final double[] white = new double[] {1,1,1};
 	static {
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 	}
 
 	public NewCamThread() {
+		SmartDashboard.putBoolean("Camera Threshold Mode", false);
+		hierarchy = new Mat();
+		System.out.println("SETTING UP CAMERAS");
 		SmartDashboard.putNumber("Peg Cam Threshold", 145);
     	SmartDashboard.putNumber("Peg Cam Threshold Upper", 240);
     	camera = CameraServer.getInstance().startAutomaticCapture();
     	camera.setResolution(320, 240);
-	    camera.setExposureManual(1);
-		camera.setBrightness(1);
+	    //camera.setExposureManual(-1);
+	    camera.setBrightness(1);
 	    camera.setFPS(10);
 	    camera.setPixelFormat(PixelFormat.kMJPEG);
 		outputStream = CameraServer.getInstance().putVideo("Processed", 320, 240);
@@ -58,13 +82,23 @@ public class NewCamThread {
 			while(!Thread.interrupted()){
 				if(!running){
 					outputStream.free();
-					//CameraServer.getInstance().removeCamera("USB Camera 0");
+					CameraServer.getInstance().removeCamera("USB Camera 0");
 					
 					break;
 				}
-				Mat input = null;
-				CameraServer.getInstance().getVideo().grabFrame(input);
-				process(input);
+				Mat input =  Mat.zeros(new Size(WIDTH, HEIGHT), CvType.CV_8UC3);
+			//	System.out.println("Processing");
+				if(CameraServer.getInstance().getVideo() != null) {
+					try {
+						CameraServer.getInstance().getVideo().grabFrame(input);
+							process(input);
+					}catch(Exception e) {
+						System.out.println("Something failed while grabbing a frame from source. ");
+						e.printStackTrace();
+					}
+					
+				}
+				
 			}
 	    });
 		thread.start();
@@ -83,18 +117,38 @@ public class NewCamThread {
 			System.out.println("INPUT MAT IS NULL");
 			return;
 		}
+		List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+		Mat hierarchy = Mat.zeros(source0.size(), CvType.CV_8UC3);
+		//System.out.println("We made it to process");
+		
+		hslHueLower = Robot.prefs.getDouble("Hue Threshold Lower", dhslHueLower);
+		hslLuminanceLower = Robot.prefs.getDouble("Luminance Threshold Lower", dhslLuminanceLower);
+		hslSaturationLower = Robot.prefs.getDouble("Saturation Threshold Lower",dhslSaturationLower);
+		hslHueUpper = Robot.prefs.getDouble("Hue Threshold Upper", dhslHueUpper);
+		hslLuminanceUpper = Robot.prefs.getDouble("Luminance Threshold Upper", dhslLuminanceUpper);
+		hslSaturationUpper = Robot.prefs.getDouble("Saturation Threshold Upper",dhslSaturationUpper);
+		bradius = Robot.prefs.getDouble("Blur Radius",8);
 		// Step Blur0:
 		Mat blurInput = source0;
 		BlurType blurType = BlurType.get("Box Blur");
-		double blurRadius = 8.108108108108103;
+		double blurRadius = bradius;
 		blur(blurInput, blurType, blurRadius, blurOutput);
 
 		// Step HSL_Threshold0:
 		Mat hslThresholdInput = blurOutput;
-		double[] hslThresholdHue = {45.32374100719424, 180.0};
-		double[] hslThresholdSaturation = {96.31294964028775, 255.0};
-		double[] hslThresholdLuminance = {126.12410071942446, 227.09595959595958};
+		Mat yeet = blurOutput;
+		Imgproc.cvtColor(blurOutput, yeet, Imgproc.COLOR_BGR2HLS);
+		//System.out.println(yeet.size());
+		double[] hsl = yeet.get(120, 160);
+		System.out.println(hsl[0] + " "+  hsl[1] + " " + hsl[2]);
+		double[] hslThresholdHue = {hslHueLower, hslHueUpper};
+		double[] hslThresholdSaturation = {hslSaturationLower, hslSaturationUpper};
+		double[] hslThresholdLuminance = {hslLuminanceLower, hslLuminanceUpper};
 		hslThreshold(hslThresholdInput, hslThresholdHue, hslThresholdSaturation, hslThresholdLuminance, hslThresholdOutput);
+		if(SmartDashboard.getBoolean("Camera Threshold Mode", false)) {
+			outputStream.putFrame(hslThresholdOutput);
+			return;
+		}
 
 		// Step CV_Canny0:
 		Mat cvCannyImage = hslThresholdOutput;
@@ -103,23 +157,95 @@ public class NewCamThread {
 		double cvCannyAperturesize = 3;
 		boolean cvCannyL2gradient = false;
 		cvCanny(cvCannyImage, cvCannyThreshold1, cvCannyThreshold2, cvCannyAperturesize, cvCannyL2gradient, cvCannyOutput);
-	        
+        //outputStream.putFrame(cvCannyOutput);
+        
+	   // System.out.println(cvCannyOutput.size());
 		ArrayList<Integer> indexes = new ArrayList<Integer>();
-		for(int j = 0;j < WIDTH;j++) {
-			if(cvCannyImage.get(HEIGHT / 2, j) == white) {
-				System.out.println(cvCannyImage.get(HEIGHT / 2, j));
-				indexes.add(j);
+		Imgproc.findContours(cvCannyOutput, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+		Rect[] rects = new Rect[contours.size()];
+		List<MatOfPoint> polys = new ArrayList<MatOfPoint>();
+		for(int i = 0;i < contours.size();i++) {
+			//MatOfPoint2f moment = new MatOfPoint2f(contours.get(i).toArray());
+			//Imgproc.approxPolyDP(moment, contours_poly[i], (double)3.0, true);
+			//Imgproc.findContours(image, contours, hierarchy, mode, method);
+			Imgproc.drawContours(output, contours, i, new Scalar(0,255,0));
+			rects[i] = Imgproc.boundingRect(new MatOfPoint(contours.get(i)));
+			Imgproc.rectangle(output, rects[i].tl(), rects[i].br(), new Scalar(0,0,255));
+		}
+		for(int i = 0;i < contours.size();i++) {
+			polys.add(new MatOfPoint(contours_poly[i].toArray()));
+		}
+		for(int i = 0;i< contours.size();i++) {
+			
+			rects[i] = Imgproc.boundingRect(polys.get(i));
+			Imgproc.rectangle(output, rects[i].tl(), rects[i].br(), new Scalar(0,0,255));
+		}
+		//ArrayList<Integer> avoid = new ArrayList<Integer>();
+		//for(int i = 0;i < contours.size();i++) {
+		//	for(int j = 0;j< contours.size();j++) {
+		//		if(rects[i].area() > rects[j].area() && rects[i].contains(getCenter(rects[j])) && i != j){
+				//	avoid.add(j);
+		//		}
+		//	}
+	//	}
+		//for(int i = 0;i< contours.size();i++) {
+		//	if(!avoid.contains(i)) {
+				//Imgproc.rectangle(output, rects[i].tl(), rects[i].br(), new Scalar(0,0,255));
+		//	}
+		//}
+	//	outputStream.putFrame(output); 
+		Rect[] largestRects = new Rect[2];
+		double largest = 0;
+		double sLargest = 0;
+		for(int i = 0;i < contours.size();i++) {
+			if(rects[i].area() > sLargest && rects[i].height > rects[i].width)  {
+				if(rects[i].area() > largest) {
+					sLargest = largest;
+					largestRects[1] = largestRects[0];
+					largest = rects[i].area();
+					largestRects[0] = rects[i];
+					
+				}else {
+					sLargest = rects[i].area();
+					largestRects[1] = rects[i];
+				}
 			}
 		}
-		
-		int avg = 0;
-		for(int i = 0; i < indexes.size();i++) {
-			avg += indexes.get(i);
+
+		Point avg;
+		if(largestRects[1] != null && largestRects[0] != null && Math.abs(getCenter(largestRects[0]).y - getCenter(largestRects[1]).y) < 15
+				&& !largestRects[0].contains(getCenter(largestRects[1]))
+				&& !largestRects[1].contains(getCenter(largestRects[0]))) {
+			System.out.println((double)largestRects[1].height / (double)largestRects[1].width);
+			Imgproc.rectangle(output, largestRects[0].tl(), largestRects[0].br(), new Scalar(0,0,255));
+			Imgproc.rectangle(output, largestRects[1].tl(), largestRects[1].br(), new Scalar(0,0,255));
+			Point avg1 = new Point((largestRects[0].tl().x + largestRects[0].br().x) / 2,(largestRects[0].tl().y + largestRects[0].br().y) / 2);
+			Point avg2 = new Point((largestRects[1].tl().x + largestRects[1].br().x) / 2,(largestRects[1].tl().y + largestRects[1].br().y) / 2);
+			avg = new Point((avg1.x + avg2.x) / 2,(avg1.y + avg2.y) / 2);
+			Imgproc.line(output, new Point(avg.x,0), new Point(avg.x,HEIGHT), new Scalar(255,0,0));
+			Imgproc.line(output, new Point(0,avg.y), new Point(WIDTH,avg.y), new Scalar(255,0,0));
+			targetLocation = (int)(avg.x - (160));
+			hasTarget = true;
+			if(avg.y > (HEIGHT * 0.6)) {
+			//	hasTarget = false;
+			}
+		}else {
+			hasTarget =false;
 		}
-		avg /= indexes.size();
-		System.out.println(avg);
+		
+		SmartDashboard.putBoolean("Has Target", hasTarget);
+		outputStream.putFrame(output);
+		output.release();
+		for(int i =0;i < contours.size();i++) {
+			contours.get(i).release();
+		}
+		
 	}
-	        
+	private Point getCenter(Rect rect) {
+		int x = (int)(rect.tl().x + rect.br().x)/2;
+		int y = (int)(rect.tl().y + rect.br().y)/2;
+		return new Point(x,y);
+	}
 	/**
 	 * This method is a generated getter for the output of a Blur.
 	 * @return Mat output from Blur.

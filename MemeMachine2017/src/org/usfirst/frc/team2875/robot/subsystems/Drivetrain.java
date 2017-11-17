@@ -7,7 +7,8 @@ import org.usfirst.frc.team2875.robot.commands.Drive;
 import edu.wpi.first.wpilibj.command.Subsystem;
 
 public class Drivetrain extends Subsystem{
-	
+	private double lastSpeed1 = 0;
+	private double lastSpeed2 = 0;
 	private double straight;
 	public Drivetrain(){
 		System.out.println("starting");
@@ -42,18 +43,30 @@ public class Drivetrain extends Subsystem{
 		
 	}
 	public void drive(double forward, double left, double right){
+		if(Robot.isAligning) {
+			return;
+		}
+		forward *= -1;
+		double speed1, speed2, g1, g2;
 		
 		//System.out.println(Robot.vis.getAngle());
-		double g1 = forward + ((right) - (left));
-		double g2 = -forward + ((right) - (left));
-		double speed2 = g1;//Math.max(0, Math.abs(g1)) * getSign(g1);
-		double speed1 = g2;//Math.max(0, Math.abs(g2)) * getSign(g2);
+		 g1 = forward + ((right) - (left));
+		 g2 = -forward + ((right) - (left));
+		if(forward != 0 && (left == 0 && right == 0) || ( forward == 0)) {
+		speed2 = getSign(g2) * Math.min(Math.abs(g2), Math.abs(lastSpeed1) + Math.abs(Robot.accelRate));//Math.max(0, Math.abs(g1)) * getSign(g1);
+		speed1 = getSign(g1) * Math.min(Math.abs(g1), Math.abs(lastSpeed2) + Math.abs(Robot.accelRate));////Math.max(0, Math.abs(g2)) * getSign(g2);
+		}else {
+			 speed2 = g2;
+			 speed1 = g1;
+		}
 		Robot.rightGearbox.setSpeed(-speed1);
 	
 		if (!Robot.clutch.isOpen) 
-			Robot.leftGearbox.setSpeed(speed2 * .88);
+			Robot.leftGearbox.setSpeed(speed2 * .91);
 			else
-				Robot.leftGearbox.setSpeed(speed2 * .70);
+				Robot.leftGearbox.setSpeed(speed2 * .88);
+		lastSpeed1 = speed1;
+		lastSpeed2 = speed2;
 	}
 	protected void initDefaultCommand() {
 		setDefaultCommand(new Drive());

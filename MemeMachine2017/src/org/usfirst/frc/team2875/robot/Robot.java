@@ -52,6 +52,7 @@ public class Robot extends IterativeRobot {
 	//Objects
 	//HeyThere!
 	//Controls Systems enabled on Robot (testing purposes)
+	public static boolean isAligning = false;
 	public static boolean camEnabled = true;
 	public static boolean driveEnabled = true;
 	//public static CvSource outStream;
@@ -63,6 +64,7 @@ public class Robot extends IterativeRobot {
 	//public static Camera cam;
 	public static final IO input = new IO();
 	public static Gyroscope gyroscope;
+	public static final double accelRate = .05; //.0 - 1
 	public static double gyroStartAngle;
 	public static int trackingThreshold = 80;
 	public static GearHolder gear ;
@@ -80,7 +82,7 @@ public class Robot extends IterativeRobot {
 	public static Relay lights; 
 	
 	public static NewCamThread vis;
-	public static AutoAlign auto = new AutoAlign();
+	public static AutoAlign auto;
 	//SETTINGS
 	public static final double GYRO_DEADZONE = .5;
 	
@@ -96,7 +98,7 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void robotInit() {
-		
+		 auto = new AutoAlign();
 		prefs = Preferences.getInstance();
 		vis = new NewCamThread();
 		lights = new Relay(3);
@@ -238,9 +240,7 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void teleopInit() {
 	
-	if(vis != null){
-		vis.stop();
-	}
+
 	
 		//	driveTrainSys = new Drivetrain();
 	    //driveTrainSys.getCurrentCommand().start();
@@ -275,6 +275,7 @@ public class Robot extends IterativeRobot {
 		
 		Scheduler.getInstance().run();
 		SmartDashboard.putNumber("Gyro", gyroscope.get_heading());
+
 		//System.out.println(Robot.encoders.getRightSpeed());
 	//System.out.println(encoders.getLeftSpeed());
 		//System.out.println(encoders.getRightSpeed());
@@ -315,8 +316,9 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void testPeriodic() {
 		LiveWindow.run();
-		gearRef[0].setSpeed(1);
-		gearRef[1].setSpeed(1);
+		clutch.open();
+		rightGearbox.setSpeed(1);
+		leftGearbox.setSpeed(1);
 	}
 }
 

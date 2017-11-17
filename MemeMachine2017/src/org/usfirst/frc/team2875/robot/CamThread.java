@@ -47,7 +47,7 @@ public class CamThread  {
     	SmartDashboard.putNumber("Peg Cam Threshold Upper", 240);
     	camera = CameraServer.getInstance().startAutomaticCapture();
     	camera.setResolution(320, 240);
-	    camera.setExposureManual(1);
+	   camera.setExposureManual(1);
 		camera.setBrightness(1);
 	    camera.setFPS(10);
 	    camera.setPixelFormat(PixelFormat.kMJPEG);
