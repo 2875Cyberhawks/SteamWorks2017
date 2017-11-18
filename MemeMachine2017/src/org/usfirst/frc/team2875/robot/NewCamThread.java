@@ -49,8 +49,8 @@ public class NewCamThread {
 	public boolean running = true;
 	public int targetLocation = 0;
 	public boolean hasTarget = false;
-	static final int WIDTH = 320;
-	static final int HEIGHT = 240;
+	static final int WIDTH = 160;
+	static final int HEIGHT = 120;
 	static final double[] white = new double[] {1,1,1};
 	static {
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -60,13 +60,13 @@ public class NewCamThread {
 		SmartDashboard.putBoolean("Camera Threshold Mode", false);
 		hierarchy = new Mat();
 		System.out.println("SETTING UP CAMERAS");
-		SmartDashboard.putNumber("Peg Cam Threshold", 145);
-    	SmartDashboard.putNumber("Peg Cam Threshold Upper", 240);
+		//SmartDashboard.putNumber("Peg Cam Threshold", 145);
+    	//SmartDashboard.putNumber("Peg Cam Threshold Upper", 240);
     	camera = CameraServer.getInstance().startAutomaticCapture();
-    	camera.setResolution(320, 240);
+    	camera.setResolution(WIDTH, HEIGHT);
 	    //camera.setExposureManual(-1);
 	    camera.setBrightness(1);
-	    camera.setFPS(10);
+	    camera.setFPS(15);
 	    camera.setPixelFormat(PixelFormat.kMJPEG);
 		outputStream = CameraServer.getInstance().putVideo("Processed", 320, 240);
 		camera2 = CameraServer.getInstance().startAutomaticCapture(1);
@@ -139,14 +139,14 @@ public class NewCamThread {
 		Mat yeet = blurOutput;
 		Imgproc.cvtColor(blurOutput, yeet, Imgproc.COLOR_BGR2HLS);
 		//System.out.println(yeet.size());
-		double[] hsl = yeet.get(120, 160);
-		System.out.println(hsl[0] + " "+  hsl[1] + " " + hsl[2]);
+		//double[] hsl = yeet.get(120, 160);
+		//System.out.println(hsl[0] + " "+  hsl[1] + " " + hsl[2]);
 		double[] hslThresholdHue = {hslHueLower, hslHueUpper};
 		double[] hslThresholdSaturation = {hslSaturationLower, hslSaturationUpper};
 		double[] hslThresholdLuminance = {hslLuminanceLower, hslLuminanceUpper};
 		hslThreshold(hslThresholdInput, hslThresholdHue, hslThresholdSaturation, hslThresholdLuminance, hslThresholdOutput);
 		if(SmartDashboard.getBoolean("Camera Threshold Mode", false)) {
-			outputStream.putFrame(hslThresholdOutput);
+			//outputStream.putFrame(hslThresholdOutput);
 			return;
 		}
 
@@ -164,21 +164,69 @@ public class NewCamThread {
 		Imgproc.findContours(cvCannyOutput, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 		Rect[] rects = new Rect[contours.size()];
 		List<MatOfPoint> polys = new ArrayList<MatOfPoint>();
+		Mat output = new Mat(source0.size(), CvType.CV_8UC3);
 		for(int i = 0;i < contours.size();i++) {
 			//MatOfPoint2f moment = new MatOfPoint2f(contours.get(i).toArray());
 			//Imgproc.approxPolyDP(moment, contours_poly[i], (double)3.0, true);
 			//Imgproc.findContours(image, contours, hierarchy, mode, method);
 			Imgproc.drawContours(output, contours, i, new Scalar(0,255,0));
 			rects[i] = Imgproc.boundingRect(new MatOfPoint(contours.get(i)));
-			Imgproc.rectangle(output, rects[i].tl(), rects[i].br(), new Scalar(0,0,255));
+		//	Imgproc.rectangle(output, rects[i].tl(), rects[i].br(), new Scalar(0,0,255));
 		}
+		double goalRatio = Robot.prefs.getDouble("Closest Ratio", 2.5);
+		ArrayList<Rect> orderByRatio = new ArrayList<Rect>();
+		Rect[] largestRects = new Rect[2];
+		double largest = 0;
+		double largest2 = 0;
 		for(int i = 0;i < contours.size();i++) {
-			polys.add(new MatOfPoint(contours_poly[i].toArray()));
+			if(rects[i].height > rects[i].width && rects[i].area() > largest2) {
+				if(rects[i].area() > largest) {
+					largestRects[1] = largestRects[0];
+					largest2 = largest;
+					largest = rects[i].area();
+					largestRects[0] = rects[i];
+				}else {
+					largestRects[1] = rects[i];
+					largest2 = rects[i].area();
+				}
+			}
 		}
-		for(int i = 0;i< contours.size();i++) {
+		/*double ratio = 50000;
+		for(int j = 0;j < contours.size();j++) {
+		for(int i = 0;i < contours.size();i++) {
+			int ind = -1;
 			
-			rects[i] = Imgproc.boundingRect(polys.get(i));
-			Imgproc.rectangle(output, rects[i].tl(), rects[i].br(), new Scalar(0,0,255));
+			if(!orderByRatio.contains(rects[i]) && rects[i].height > rects[i].width &&  (Math.abs((double)rects[i].height / (double)rects[i].width) - goalRatio) < ratio) {
+				ratio = (Math.abs((double)rects[i].height / (double)rects[i].width) - goalRatio);
+				ind  = i;
+				System.out.println("masd");
+			}
+			if(ind == -1) {
+				break;
+			}
+			orderByRatio.add(rects[ind]);
+		}
+		}
+		for(int i = 0;i < orderByRatio.size();i++) {
+			Imgproc.rectangle(output, orderByRatio.get(i).tl(), orderByRatio.get(i).br(), new Scalar(0,255,0));
+		}
+		double size = 0;
+		int avoid = -1;
+		for(int i = 0;i < orderByRatio.size();i++) {
+		//	Imgproc.rectangle(output, rects[i].tl(), rects[i].br(), new Scalar(255,255,255));
+			if(orderByRatio.get(i).height > orderByRatio.get(i).width && orderByRatio.get(i).area() > size) {
+				size = orderByRatio.get(i).area();
+				avoid = i;
+			}
+		}
+		if(avoid != -1) {
+		largestRects[0] = orderByRatio.get(avoid);
+		
+		for(int i = 0;i < orderByRatio.size();i++) {
+			if(i != avoid && (Math.abs(getCenter(orderByRatio.get(i)).y - getCenter(largestRects[0]).y) < 15)) {
+				largestRects[1] = rects[i];
+			}
+		}
 		}
 		//ArrayList<Integer> avoid = new ArrayList<Integer>();
 		//for(int i = 0;i < contours.size();i++) {
@@ -193,27 +241,33 @@ public class NewCamThread {
 				//Imgproc.rectangle(output, rects[i].tl(), rects[i].br(), new Scalar(0,0,255));
 		//	}
 		//}
-	//	outputStream.putFrame(output); 
-		Rect[] largestRects = new Rect[2];
-		double largest = 0;
-		double sLargest = 0;
+	//	outputStream.putFrame(output);
+	
+	
+		/*double ratio = 500;
+		double ratio2 = 500;
 		for(int i = 0;i < contours.size();i++) {
-			if(rects[i].area() > sLargest && rects[i].height > rects[i].width)  {
-				if(rects[i].area() > largest) {
-					sLargest = largest;
+			if(Math.abs(((double)rects[i].height / (double)rects[i].width) - goalRatio) < ratio2 && rects[i].height > rects[i].width)  {
+				if((Math.abs(((double)rects[i].height / (double)rects[i].width) - goalRatio) < ratio)) {
+					ratio2 = ratio;
 					largestRects[1] = largestRects[0];
-					largest = rects[i].area();
+					ratio = (Math.abs(((double)rects[i].height / (double)rects[i].width) - goalRatio));
 					largestRects[0] = rects[i];
 					
 				}else {
-					sLargest = rects[i].area();
+					ratio2 = (Math.abs(((double)rects[i].height / (double)rects[i].width) - goalRatio));
 					largestRects[1] = rects[i];
+					
 				}
 			}
+		}*/
+		
+		if(largestRects[0] != null) {
+			Imgproc.rectangle(output, largestRects[0].tl(), largestRects[0].br(), new Scalar(0,0,255));
 		}
 
 		Point avg;
-		if(largestRects[1] != null && largestRects[0] != null && Math.abs(getCenter(largestRects[0]).y - getCenter(largestRects[1]).y) < 15
+		if(largestRects[1] != null && largestRects[0] != null && Math.abs(getCenter(largestRects[0]).y - getCenter(largestRects[1]).y) < 5
 				&& !largestRects[0].contains(getCenter(largestRects[1]))
 				&& !largestRects[1].contains(getCenter(largestRects[0]))) {
 			System.out.println((double)largestRects[1].height / (double)largestRects[1].width);
